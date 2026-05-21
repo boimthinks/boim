@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Form Mandiri boim.thinks</title>
+    <style>
+      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background-color: #f1f5f9; color: #334155; margin: 0; padding: 40px 20px; display: flex; justify-content: center; }
+      .form-container { background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); width: 100%; max-width: 500px; box-sizing: border-box; }
+      h2 { margin-top: 0; color: #1e293b; font-size: 22px; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 20px; }
+      .form-group { margin-bottom: 20px; }
+      label { display: block; font-weight: 600; margin-bottom: 8px; color: #475569; }
+      textarea { width: 100%; height: 120px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; resize: vertical; font-family: inherit; font-size: 14px; }
+      input[type="file"] { display: block; width: 100%; padding: 10px; border: 1px dashed #cbd5e1; background-color: #f8fafc; border-radius: 6px; box-sizing: border-box; cursor: pointer; }
+      button { width: 100%; background-color: #2563eb; color: white; padding: 12px; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; }
+      button:disabled { background-color: #94a3b8; cursor: not-allowed; }
+      #status-message { margin-top: 15px; padding: 12px; border-radius: 6px; font-size: 14px; display: none; text-align: center; font-weight: 500; }
+      .success { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+      .loading { background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+    </style>
+  </head>
+  <body>
+
+    <div class="form-container">
+      <h2>Form Eksternal boim.thinks</h2>
+      <form id="mainForm">
+        <div class="form-group">
+          <label for="konsepKasar">Konsep Kasar</label>
+          <textarea id="konsepKasar" placeholder="Masukkan konsep kasar di sini..." required></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="myFile">Feature Image</label>
+          <input type="file" id="myFile" required>
+        </div>
+        
+        <button type="submit" id="submitBtn">Kirim ke Spreadsheet</button>
+      </form>
+      
+      <div id="status-message"></div>
+    </div>
+
+    <!-- Iframe tersembunyi untuk memproses submit tanpa reload halaman & bypass CORS -->
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+
+    <script>
+      const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyFLCINv1Wg5Aes-xj7Kp1QJ2fPpCKEa61DXA4zMg3BE4Aq3xVkC48Fxh4xNmtHUTMV/exec";
+
+      document.getElementById('mainForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('submitBtn');
+        const statusMsg = document.getElementById('status-message');
+        const konsepKasarVal = document.getElementById('konsepKasar').value;
+        const fileInput = document.getElementById('myFile').files[0];
+        
+        if (!fileInput) return;
+
+        submitBtn.disabled = true;
+        statusMsg.style.display = 'block';
+        statusMsg.className = 'loading';
+        statusMsg.innerHTML = 'Sedang mengirim data dan file...';
+
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const payload = {
+            konsepKasar: konsepKasarVal,
+            fileName: fileInput.name,
+            fileData: evt.target.result
+          };
+
+          // Membuat form virtual yang melempar target data ke iframe tersembunyi
+          const vForm = document.createElement('form');
+          vForm.method = 'POST';
+          vForm.action = APPS_SCRIPT_URL;
+          vForm.target = 'hidden_iframe';
+
+          const vInput = document.createElement('input');
+          vInput.type = 'hidden';
+          vInput.name = 'json_payload'; // Dibungkus agar aman
+          vInput.value = JSON.stringify(payload);
+          
+          vForm.appendChild(vInput);
+          document.body.appendChild(vForm);
+          
+          // Deteksi ketika iframe selesai memproses data
+          document.getElementById('hidden_iframe').onload = function() {
+            submitBtn.disabled = false;
+            statusMsg.className = 'success';
+            statusMsg.innerHTML = 'Data sukses terkirim ke Google Sheets!';
+            document.getElementById('mainForm').reset();
+            vForm.remove();
+          };
+
+          vForm.submit();
+        };
+
+        reader.readAsDataURL(fileInput);
+      });
+    </script>
+  </body>
+</html>
