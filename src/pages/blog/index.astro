@@ -19,12 +19,21 @@ const processedPosts = posts.map((post: any) => {
     console.error("Error parsing frontmatter:", e);
     return null;
   }
-}).filter(Boolean);
+}).filter(Boolean).sort((a, b) => {
+  // Parse DD/MM/YYYY format correctly
+  const parseDate = (dateStr) => {
+    const [datePart, timePart] = dateStr.split(' ');
+    const [day, month, year] = datePart.split('/');
+    return new Date(`${year}-${month}-${day}T${timePart}`);
+  };
+  
+  return parseDate(b.date).getTime() - parseDate(a.date).getTime();
+});
 ---
 
 <Layout title="boim.thinks() | Archive">
 	<main class="max-w-4xl mx-auto p-6">
-		<h1 class="text-4xl font-bold mb-12">Blog Archive</h1>
+		<h1 class="text-2xl font-bold mb-8">All Posts</h1>
 		<div class="grid gap-10">
 			{processedPosts.map((post: any) => (
 				<BlogCard {...post} />

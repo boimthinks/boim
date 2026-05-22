@@ -19,7 +19,16 @@ const processedPosts = posts.map((post: any) => {
     console.error("Error parsing frontmatter:", e);
     return null;
   }
-}).filter(Boolean);
+}).filter(Boolean).sort((a, b) => {
+  // Parse DD/MM/YYYY format correctly
+  const parseDate = (dateStr) => {
+    const [datePart, timePart] = dateStr.split(' ');
+    const [day, month, year] = datePart.split('/');
+    return new Date(`${year}-${month}-${day}T${timePart}`);
+  };
+  
+  return parseDate(b.date).getTime() - parseDate(a.date).getTime();
+});
 ---
 
 <Layout title="boim.thinks() | Home">

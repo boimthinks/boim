@@ -1,0 +1,69 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+export const prerender = true;
+---
+
+<Layout title="About | boim.thinks()">
+  <main class="max-w-4xl mx-auto p-6 py-12">
+    
+    
+    <article>
+      <h1 class="text-2xl font-bold mb-8">About Me</h1>
+      
+      <div class="prose-custom">
+        <p class="text-lg text-gray-300 mb-6">
+          Hi, I'm Chris Pennington, a developer and tech enthusiast who loves building things with code.
+        </p>
+        
+        <p class="text-gray-300 mb-6">
+          Welcome to my digital garden! This is where I share my thoughts on technology, programming, 
+          and anything else that catches my interest. I believe in learning in public and documenting 
+          my journey as I explore new technologies and solve interesting problems.
+        </p>
+        
+        <h2>What I Do</h2>
+        
+        <p class="text-gray-300 mb-6">
+          I work on a variety of projects ranging from web development to automation tools. 
+          My goal is to create solutions that are not only functional but also delightful to use.
+        </p>
+        
+        <ul class="mb-6">
+          <li class="mb-2">Full-stack web development</li>
+          <li class="mb-2">Open source contributions</li>
+          <li class="mb-2">Technical writing and documentation</li>
+          <li class="mb-2">Mentoring new developers</li>
+        </ul>
+        
+        <h2>Get In Touch</h2>
+        
+        <p class="text-gray-300 mb-6">
+          Feel free to reach out if you'd like to collaborate on a project, have questions about 
+          something I've written, or just want to chat about tech. You can find me on various platforms:
+        </p>
+        
+        <ul class="mb-6">
+          <li class="mb-2">
+            <a href="https://github.com/yourusername" target="_blank" rel="noopener noreferrer" 
+               class="text-blue-400 hover:underline">
+              GitHub
+            </a> - Code and projects
+          </li>
+          <li class="mb-2">
+            <a href="https://twitter.com/yourusername" target="_blank" rel="noopener noreferrer" 
+               class="text-blue-400 hover:underline">
+              Twitter
+            </a> - Quick thoughts and updates
+          </li>
+          <li class="mb-2">
+            <a href="mailto:youremail@example.com" 
+               class="text-blue-400 hover:underline">
+              Email
+            </a> - For longer discussions
+          </li>
+        </ul>
+      </div>
+    </article>
+  </main>
+</Layout>

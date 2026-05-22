@@ -48,7 +48,7 @@ if (!isNaN(d.getTime())) {
 }
 ---
 
-<Layout title={`${data.title_short || 'Post'} | boim.thinks()`}>
+<Layout title={`${data.title_seo || 'Post'} // boim.thinks()`}>
   <main class="max-w-4xl mx-auto p-6 py-12">
     
     
@@ -70,7 +70,7 @@ if (!isNaN(d.getTime())) {
       </div>
 
       <!-- Judul SEO -->
-      <h1 class="text-4xl font-bold mb-6 mt-8">{data.title_seo}</h1>
+      <h1 class="text-2xl font-bold mb-6 mt-8">{data.title_seo}</h1>
 
       <!-- Gambar -->
       {imageUrl && (
