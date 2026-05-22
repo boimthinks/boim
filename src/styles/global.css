@@ -7,11 +7,13 @@
   }
   
   /* Manual styling to replace missing prose plugin */
-  .prose-custom h2 { @apply text-2xl font-bold text-blue-400 mt-8 mb-4; }
-  .prose-custom h3 { @apply text-xl font-bold text-blue-300 mt-6 mb-3; }
-  .prose-custom p { @apply text-gray-300 mb-4 leading-relaxed; }
-  .prose-custom ul { @apply list-disc list-inside mb-4 text-gray-300; }
-  .prose-custom ol { @apply list-decimal list-inside mb-4 text-gray-300; }
+  .prose-custom h2 { @apply text-xl font-bold text-blue-400 mt-8 mb-4; }
+  .prose-custom h3 { @apply text-lg font-bold text-blue-400 mt-6 mb-3; }
+  .prose-custom p { @apply text-sm text-gray-300 mb-4 leading-relaxed; }
+  .prose-custom ul { @apply list-disc mb-4 text-gray-300; }
+  .prose-custom ol { @apply list-decimal mb-4 text-gray-300; }
+  .prose-custom ul,
+  .prose-custom ol { @apply pl-6; }
   .prose-custom li { @apply my-1; }
   .prose-custom table { @apply w-full border-collapse border border-gray-800 my-4; }
   .prose-custom th { @apply border border-gray-800 p-2 bg-gray-800 text-white; }
