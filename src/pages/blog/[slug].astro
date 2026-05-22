@@ -21,34 +21,86 @@ export async function getStaticPaths() {
   }).filter(Boolean);
 }
 
-const { post } = Astro.props;
+const { post } = Astro.props as { post: any };
 let data: any = {};
 let htmlContent = "";
+let parsed: any = null;
+
+// Parse DD/MM/YYYY format correctly
+const parseIndonesianDate = (dateStr: string) => {
+  if (!dateStr) return null;
+  try {
+    const [datePart, timePart] = dateStr.split(' ');
+    const [day, month, year] = datePart.split('/');
+    return new Date(`${year}-${month}-${day}T${timePart}`);
+  } catch (e) {
+    console.error("Error parsing date:", e);
+    return new Date(dateStr); // fallback to default parsing
+  }
+};
 
 try {
-  const parsed = matter(post.content);
+  parsed = matter(post.content);
   data = parsed.data;
-  htmlContent = marked.parse(parsed.content);
+  htmlContent = await marked.parse(parsed.content);
 } catch (e) {
   console.error("Error parsing content:", e);
 }
 
 const imageUrl = formatDriveUrl(data.feature_image);
 
-// Format date to 'd MMMM yyyy' (Indonesian)
-const d = new Date(data.published_at);
 let formattedDate = data.published_at;
-
-if (!isNaN(d.getTime())) {
-  formattedDate = new Intl.DateTimeFormat('id-ID', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  }).format(d);
+try {
+  const d = parseIndonesianDate(data.published_at);
+  if (d && !isNaN(d.getTime())) {
+    formattedDate = new Intl.DateTimeFormat('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    }).format(d);
+  }
+} catch (e) {
+  console.error("Error formatting date:", e);
+  formattedDate = data.published_at || "Tanggal tidak tersedia";
 }
+
+// Create Schema.org structured data
+const formatDateForSchema = (dateStr: string) => {
+  try {
+    const parsedDate = parseIndonesianDate(dateStr);
+    return parsedDate ? parsedDate.toISOString() : new Date().toISOString();
+  } catch (e) {
+    console.error("Error formatting date for schema:", e);
+    return new Date().toISOString();
+  }
+};
+
+const schemaData = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": data.title_seo || data.title_short,
+  "description": data.description,
+  "datePublished": data.published_at ? formatDateForSchema(data.published_at) : new Date().toISOString(),
+  "dateModified": data.updated_at ? formatDateForSchema(data.updated_at) : (data.published_at ? formatDateForSchema(data.published_at) : new Date().toISOString()),
+  "author": {
+    "@type": "Person",
+    "name": "Boim Thinker"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "boim.thinks()",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://boim.web.id/favicon.webp"
+    }
+  },
+  "image": imageUrl || "https://boim.web.id/favicon.webp",
+  "articleBody": parsed?.content ? parsed.content.substring(0, 200) + "..." : data.description || "No content available",
+  "keywords": data.tags ? data.tags.split(',').map((tag: string) => tag.trim()) : []
+};
 ---
 
-<Layout title={`${data.title_seo || 'Post'} // boim.thinks()`}>
+<Layout title={`${data.title_seo || 'Post'} // boim.thinks()`} schemaData={schemaData}>
   <main class="max-w-4xl mx-auto p-6 py-12">
     
     

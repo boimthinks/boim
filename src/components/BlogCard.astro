@@ -14,7 +14,7 @@ const displayImg = formatDriveUrl(feature_image);
 
 // Format date to 'd MMMM yyyy' (Indonesian)
 // Parse DD/MM/YYYY format correctly
-const parseDate = (dateStr) => {
+const parseDate = (dateStr: string) => {
   const [datePart, timePart] = dateStr.split(' ');
   const [day, month, year] = datePart.split('/');
   return new Date(`${year}-${month}-${day}T${timePart}`);
@@ -51,7 +51,7 @@ if (!isNaN(d.getTime())) {
     <img
       src={displayImg || '/favicon.svg'}
       alt={title}
-      class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+      class="w-full h-full object-cover transition-transform duration-300 hover:scale-105 filter grayscale"
       onerror="this.src='/favicon.svg'"
     />
   </div>
