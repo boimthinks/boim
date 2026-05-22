@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boim Web Id - Control Panel</title>
+    <!-- Menggunakan Tailwind CSS biar tampilan tombolnya cakep -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
+
+    <div class="bg-gray-800 p-8 rounded-2xl shadow-xl max-w-sm w-full text-center border border-gray-700">
+        <h1 class="text-2xl font-bold mb-2">CMS Deployer</h1>
+        <p class="text-gray-400 text-sm mb-6">Picu proses build Netlify untuk memperbarui konten Astro dari Google Sheets.</p>
+        
+        <!-- Tombol Build -->
+        <button id="btnBuild" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-6 rounded-xl transition duration-200 cursor-pointer shadow-lg shadow-blue-600/30 active:scale-98">
+            🚀 Jalankan Build Website
+        </button>
+
+        <!-- Status Log -->
+        <div id="statusMessage" class="mt-4 text-sm font-medium hidden"></div>
+    </div>
+
+    <script>
+        // GANTI DENGAN URL BUILD HOOK NETLIFY ANDA YANG ASLI
+        const NETLIFY_HOOK_URL = "https://api.netlify.com/build_hooks/6a0f07ff10ebc16d680132b0";
+
+        document.getElementById('btnBuild').addEventListener('click', async () => {
+            const btn = document.getElementById('btnBuild');
+            const statusBox = document.getElementById('statusMessage');
+
+            // Ubah state tombol saat loading
+            btn.disabled = true;
+            btn.innerText = "⏳ Sedang Menghubungi Netlify...";
+            btn.classList.replace('bg-blue-600', 'bg-gray-600');
+            
+            statusBox.classList.remove('hidden');
+            statusBox.className = "mt-4 text-sm font-medium text-yellow-400";
+            statusBox.innerText = "Mengirimkan sinyal deploy...";
+
+            try {
+                // Menembak POST request ke Netlify Hook
+                const response = await fetch(NETLIFY_HOOK_URL, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    statusBox.className = "mt-4 text-sm font-medium text-green-400 bg-green-950/40 p-3 rounded-lg border border-green-800";
+                    statusBox.innerText = "✅ BERHASIL! Netlify sedang melakukan build ulang di latar belakang. Tunggu sekitar 1-2 menit agar perubahan muncul di boim.web.id.";
+                } else {
+                    throw new Error("Respon server tidak oke");
+                }
+            } catch (error) {
+                statusBox.className = "mt-4 text-sm font-medium text-red-400 bg-red-950/40 p-3 rounded-lg border border-red-800";
+                statusBox.innerText = "❌ GAGAL: Terjadi masalah koneksi atau URL Hook salah.";
+            } finally {
+                // Kembalikan tombol ke kondisi semula setelah 5 detik
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerText = "🚀 Jalankan Build Website";
+                    btn.classList.replace('bg-gray-600', 'bg-blue-600');
+                }, 5000);
+            }
+        });
+    </script>
+</body>
+</html>
