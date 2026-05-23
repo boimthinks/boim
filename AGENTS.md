@@ -41,3 +41,33 @@ npm run preview # Preview built site locally
 - JavaScript's Date constructor doesn't parse DD/MM/YYYY format correctly
 - Always use custom date parser for blog post dates
 - Blog images are Google Drive URLs that need formatting with formatDriveUrl()
+
+## Google Drive Images on Astro
+
+### The Problem
+Google Drive images often don't load in Astro pages (both `[slug].astro` and `BlogCard.astro`). This happens because:
+1. **Hotlinking protection** — Google blocks image requests based on the `Referer` header
+2. **URL format instability** — Google changes their image serving URLs over time
+
+### Attempted Solutions (Failed/Unstable)
+| URL Format | Result |
+|---|---|
+| `https://lh3.googleusercontent.com/d/{fileId}` (without `referrerpolicy`) | Blocked by referrer |
+| `https://drive.google.com/uc?export=view&id={fileId}` | Often shows virus scan warning page instead of image |
+
+### Working Solution
+Two things are required together for images to load reliably:
+
+1. **Use the correct URL format** — `https://lh3.googleusercontent.com/d/{fileId}` (Google's dedicated image CDN)
+2. **Add `referrerpolicy="no-referrer"`** to every `<img>` tag loading Google Drive images — this prevents Google from seeing the origin and blocking the request
+3. **Add `onerror="this.src='/no_image.webp'"`** as fallback for when images inevitably fail
+
+Files to update when handling Google Drive images:
+- `src/lib/utils.js` — `formatDriveUrl()` function generates the CDN URL
+- `src/pages/blog/[slug].astro` — post detail page `<img>` tag
+- `src/components/BlogCard.astro` — post card `<img>` tag
+
+Always include all three attributes on the `<img>` tag:
+```html
+<img src={imageUrl} alt="..." referrerpolicy="no-referrer" onerror="this.src='/no_image.webp'" />
+```

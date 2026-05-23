@@ -34,7 +34,7 @@ if (!isNaN(d.getTime())) {
 
 <article class="overflow-hidden shadow-sm hover:shadow-md transition-shadow flex items-stretch h-full w-full gap-6">
   <div class="flex flex-col flex-grow">
-    <time class="text-xs text-gray-400 font-semibold mb-2 block">{formattedDate}</time>
+    <time class="text-xs text-gray-600 font-semibold mb-2 block">{formattedDate}</time>
     <h3 class="font-bold text-white mb-3 line-clamp-2 leading-tight text-xl uppercase">
       <a href={`/blog/${slug}`} class="hover:text-blue-300 transition-colors">
         {title}
@@ -49,10 +49,11 @@ if (!isNaN(d.getTime())) {
 
   <div class="w-1/3 min-w-[200px] bg-gray-800 rounded-xl overflow-hidden max-md:hidden">
     <img
-      src={displayImg || '/favicon.svg'}
+      src={displayImg || '/icon.svg'}
       alt={title}
       class="w-full h-full object-cover transition-transform duration-300 hover:scale-105 filter grayscale"
-      onerror="this.src='/favicon.svg'"
+      onerror="this.src='/no_image.webp'"
+      referrerpolicy="no-referrer"
     />
   </div>
 </article>

@@ -107,7 +107,7 @@ const schemaData = {
     <article>
       <!-- Date and Tags -->
       <div class="flex flex-wrap items-center gap-4 mb-4">
-        <time class="text-sm text-gray-400 font-semibold">
+        <time class="text-xs text-gray-400 font-semibold">
           {formattedDate}
         </time>
         {data.tags && (
@@ -122,18 +122,18 @@ const schemaData = {
       </div>
 
       <!-- Judul SEO -->
-      <h1 class="text-2xl font-bold mb-6 mt-8">{data.title_seo}</h1>
+      <h1 class="text-2xl font-bold uppercase mb-6 mt-8">{data.title_seo}</h1>
 
       <!-- Gambar -->
       {imageUrl && (
-        <img src={imageUrl} alt={data.title_short} class="w-full h-auto rounded-xl mb-8 border border-gray-800" />
+        <img src={imageUrl} alt={data.title_short} class="w-full h-auto rounded-xl mb-8 border border-gray-800" onerror="this.src='/no_image.webp'" referrerpolicy="no-referrer" />
       )}
 
       <!-- Judul Short -->
-      <h2 class="text-xl font-bold mb-4 text-blue-400">{data.title_short}</h2>
+      <h2 class="text-xl font-bold mb-4 text-white">{data.title_short}</h2>
 
       <!-- Intro -->
-      <p class="text-sm text-gray-300 mb-8">{data.intro}</p>
+      <p class="text-sm text-gray-400 mb-8">{data.intro}</p>
 
       <!-- Content with prose styling -->
       <div class="prose-custom" set:html={htmlContent} />
