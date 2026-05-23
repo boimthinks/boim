@@ -6,9 +6,15 @@ import '../styles/global.css';
 interface Props {
 	title: string;
 	schemaData?: any;
+	og?: {
+		title: string;
+		description: string;
+		image: string;
+		url: string;
+	};
 }
 
-const { title, schemaData } = Astro.props;
+const { title, schemaData, og } = Astro.props;
 ---
 
 <!doctype html>
@@ -16,10 +22,24 @@ const { title, schemaData } = Astro.props;
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" type="image/svg+xml" href="/icon.svg" />
 		<link rel="icon" href="/favicon.ico" />
 		<meta name="generator" content={Astro.generator} />
-		<title>{title || 'boim.thinks()'}</title>
+		<title>{og?.title || title || 'boim.thinks()'}</title>
+		<meta name="description" content={og?.description || 'boim.thinks() - Blog about coding, technology and more'} />
+		{og && (
+			<>
+				<meta property="og:title" content={og.title} />
+				<meta property="og:description" content={og.description} />
+				<meta property="og:image" content={og.image} />
+				<meta property="og:url" content={og.url} />
+				<meta property="og:type" content="article" />
+				<meta name="twitter:card" content="summary_large_image" />
+				<meta name="twitter:title" content={og.title} />
+				<meta name="twitter:description" content={og.description} />
+				<meta name="twitter:image" content={og.image} />
+			</>
+		)}
 		{schemaData && <script type="application/ld+json" set:html={JSON.stringify(schemaData)}></script>}
 	</head>
 	<body class="bg-gray-950 text-white min-h-screen flex flex-col">

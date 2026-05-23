@@ -91,16 +91,23 @@ const schemaData = {
     "name": "boim.thinks()",
     "logo": {
       "@type": "ImageObject",
-      "url": "https://boim.web.id/favicon.webp"
+      "url": "https://boim.web.id/favicon.png"
     }
   },
-  "image": imageUrl || "https://boim.web.id/favicon.webp",
+  "image": imageUrl || "https://boim.web.id/favicon.png",
   "articleBody": parsed?.content ? parsed.content.substring(0, 200) + "..." : data.description || "No content available",
   "keywords": data.tags ? data.tags.split(',').map((tag: string) => tag.trim()) : []
 };
 ---
 
-<Layout title={`${data.title_seo || 'Post'} // boim.thinks()`} schemaData={schemaData}>
+<Layout title={`${data.title_seo || 'Post'} // boim.thinks()`} schemaData={schemaData}
+	og={{
+		title: data.title_seo || data.title_short || 'boim.thinks()',
+		description: data.description || '',
+		image: imageUrl || 'https://boim.web.id/favicon.png',
+		url: `https://boim.web.id/blog/${data.slug}`,
+	}}
+>
   <main class="max-w-4xl mx-auto p-6 py-12">
     
     
