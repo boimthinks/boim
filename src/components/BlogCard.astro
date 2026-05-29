@@ -1,6 +1,4 @@
 ---
-import { formatDriveUrl } from '../lib/utils';
-
 interface Props {
   title: string;
   description: string;
@@ -10,7 +8,6 @@ interface Props {
 }
 
 const { title, description, date, slug, feature_image } = Astro.props;
-const displayImg = formatDriveUrl(feature_image);
 
 // Format date to 'd MMMM yyyy' (Indonesian)
 // Parse DD/MM/YYYY format correctly
@@ -49,11 +46,9 @@ if (!isNaN(d.getTime())) {
 
   <div class="w-1/3 min-w-[200px] bg-gray-800 rounded-xl overflow-hidden max-md:hidden">
     <img
-      src={displayImg || '/icon.svg'}
+      src={feature_image || '/icon.svg'}
       alt={title}
       class="w-full h-full object-cover transition-transform duration-300 hover:scale-105 filter grayscale"
-      onerror="this.src='/no_image.webp'"
-      referrerpolicy="no-referrer"
     />
   </div>
 </article>

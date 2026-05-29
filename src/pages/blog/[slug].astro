@@ -2,7 +2,6 @@
 import Layout from '../../layouts/Layout.astro';
 import { getBlogPosts } from '../../lib/api';
 import { marked } from 'marked';
-import { formatDriveUrl } from '../../lib/utils';
 import matter from 'gray-matter';
 
 export async function getStaticPaths() {
@@ -48,10 +47,9 @@ try {
     return `<a href="${href}" target="_blank" rel="noopener noreferrer"${titleAttr}>${text}</a>`;
   };
   renderer.image = ({ href, title, text }) => {
-    const src = formatDriveUrl(href);
     const alt = text || title || '';
     const titleAttr = title ? ` title="${title}"` : '';
-    return `<img src="${src}" alt="${alt}"${titleAttr} class="w-full h-auto rounded-lg my-4" referrerpolicy="no-referrer" onerror="this.src='/no_image.webp'" />`;
+    return `<img src="${href}" alt="${alt}"${titleAttr} class="w-full h-auto rounded-lg my-4" />`;
   };
   marked.use({ renderer });
   htmlContent = await marked.parse(parsed.content);
@@ -59,7 +57,8 @@ try {
   console.error("Error parsing content:", e);
 }
 
-const imageUrl = formatDriveUrl(data.feature_image);
+const imageUrl = data.feature_image;
+const ogImage = imageUrl?.startsWith('/') ? `https://boim.web.id${imageUrl}` : (imageUrl || 'https://boim.web.id/favicon.png');
 
 let formattedDate = data.published_at;
 try {
@@ -106,7 +105,7 @@ const schemaData = {
       "url": "https://boim.web.id/favicon.png"
     }
   },
-  "image": imageUrl || "https://boim.web.id/favicon.png",
+  "image": ogImage,
   "articleBody": parsed?.content ? parsed.content.substring(0, 200) + "..." : data.description || "No content available",
   "keywords": data.tags ? data.tags.split(',').map((tag: string) => tag.trim()) : []
 };
@@ -116,7 +115,7 @@ const schemaData = {
 	og={{
 		title: data.title_seo || data.title_short || 'boim.thinks()',
 		description: data.description || '',
-		image: imageUrl || 'https://boim.web.id/favicon.png',
+		image: ogImage,
 		url: `https://boim.web.id/blog/${data.slug}`,
 	}}
 >
@@ -145,7 +144,7 @@ const schemaData = {
 
       <!-- Gambar -->
       {imageUrl && (
-        <img src={imageUrl} alt={data.title_short} class="w-full h-auto rounded-xl mb-8 border border-gray-800" onerror="this.src='/no_image.webp'" referrerpolicy="no-referrer" />
+        <img src={imageUrl} alt={data.title_short} class="w-full h-auto rounded-xl mb-8 border border-gray-800" />
       )}
 
       <!-- Judul Short -->
