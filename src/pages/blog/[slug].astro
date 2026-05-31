@@ -176,10 +176,10 @@ const relatedPosts = allPosts
     <div class="max-w-[90rem] mx-auto flex flex-col s:flex-row gap-12">
       <div class="flex-1 min-w-0 max-w-[75rem]">
         {data.title_short && (
-          <h2 class="text-xl s:text-2xl font-bold mb-6 leading-tight">{data.title_short}</h2>
+          <h2 class="text-3xl font-bold mb-6 leading-tight">{data.title_short}</h2>
         )}
         {data.intro && (
-          <p class="text-base s:text-lg text-content-secondary mb-10 leading-relaxed reveal">{data.intro}</p>
+          <p class="text-lg text-content-secondary mb-10 leading-relaxed reveal">{data.intro}</p>
         )}
         <div class="article-body" set:html={htmlContent} />
       </div>

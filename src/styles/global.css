@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet"');
 @import "tailwindcss";
 
 @theme {
@@ -38,27 +39,27 @@
   }
 
   .article-body h2 {
-    font-size: 1.5rem;
+    font-size: var(--text-3xl);
     font-weight: 700;
     margin-top: 2rem;
     margin-bottom: 1rem;
     line-height: 1.2;
   }
   .article-body h3 {
-    font-size: 1.25rem;
-    font-weight: 600;
+    font-size: var(--text-xl);
+    font-weight: 700;
     margin-top: 1.5rem;
     margin-bottom: 0.75rem;
   }
   .article-body p {
-    font-size: 1rem;
+    font-size: var(--text-lg);
     color: var(--color-content-secondary);
     margin-bottom: 1rem;
     line-height: 1.75;
   }
   .article-body a {
     color: var(--color-green-electric);
-    text-decoration: underline;
+    text-decoration: none;
     text-underline-offset: 2px;
     transition: opacity 0.2s;
   }
@@ -73,14 +74,18 @@
     font-style: italic;
   }
   .article-body code {
-    font-size: 0.875rem;
+    font-family: ibm plex mono, monospace;
+    font-size: var(--text-base);
     background-color: #000000;
     padding: 0.125rem 0.5rem;
     border-radius: 0.25rem;
     color: #f79d11;
     margin: 0 0.5rem;
+    text-wrap: wrap;
   }
   .article-body pre {
+    font-family: ibm plex mono, monospace;
+    font-size: var(--text-base);
     background-color: var(--color-surface-secondary);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 0.5rem;
@@ -107,6 +112,7 @@
   }
   .article-body li {
     margin: 0.25rem 0;
+    font-size: var(--text-lg);
   }
   .article-body img {
     width: 100%;
