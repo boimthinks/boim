@@ -1,35 +1,115 @@
 ---
 ---
-<div class="pt-6">
-  <div class="max-w-4xl mx-auto p-6">
-    <nav class="mb-1" data-astro-transition-scope="astro-zscz5gm2-1">
-      <div class="flex items-center gap-2 justify-between">
-        <a href="/" class="group text-2xl font-bold flex items-center gap-2 duration-500 ease-lazy rounded-lg hover:scale-[100.5%] active:scale-[99%] hover:ring-border/60 hover:bg-border/60 no-underline" style="transition:background-color 0.5s var(--ease-lazy), box-shadow 0.5s var(--ease-lazy)">
-          <img src="/icon.svg" alt="boim.thinks() logo" width="36" height="36" class="rounded-full group-hover:-rotate-3 transition-transform duration-500 ease-lazy mr-2" />
-          boim.thinks()
-        </a>
-        
-          <img src="/favicon.svg" alt="boim.thinks() logo" width="24" height="24" class="rounded-full group-hover:-rotate-3 transition-transform duration-500 ease-lazy" />
 
-      </div>
-      <div class="flex items-center gap-4 mt-4">
-        <a href="/" aria-current="page" class="text-xs uppercase tracking-wide transition-colors relative px-1 py-0.5 text-text">
-          <span class="absolute inset-0 -mx-2.5 -my-1 bg-border/60 rounded-full" aria-hidden="true" data-astro-transition-scope="astro-srdvutyk-2"></span>
-          <span class="relative">Home</span>
-        </a>
-        <a href="/blog" class="text-xs uppercase tracking-wide transition-colors relative px-1 py-0.5 text-muted/70 hover:text-text">
-          <span class="relative">Blog</span>
-        </a>
-        <a href="/about" class="text-xs uppercase tracking-wide transition-colors relative px-1 py-0.5 text-muted/70 hover:text-text">
-          <span class="relative">About</span>
-        </a>
-        <a href="#" class="text-xs uppercase tracking-wide transition-colors relative px-1 py-0.5 text-muted/70 hover:text-text">
-          <span class="relative">Uses</span>
-        </a>
-        <a href="#" class="text-xs uppercase tracking-wide transition-colors relative px-1 py-0.5 text-muted/70 hover:text-text">
-          <span class="relative">Videos</span>
-        </a>
-      </div>
+<header class="sh fixed top-0 left-0 w-full z-50 transition-all duration-[0.75s] ease-out-expo bg-surface-secondary px-6 s:px-16 d:px-100">
+  <div class="sh__content flex items-center justify-between h-16 s:h-16 max-w-[90rem] mx-auto">
+    <a href="/" class="sh-logo flex items-center gap-2 text-content no-underline">
+      <img src="/icon.svg" alt="" width="36" height="36" class="sh-logo__icon shrink-0 transition-all duration-[0.75s] ease-out-expo" />
+      <span class="sh-logo__text font-bold text-lg transition-all duration-[0.75s] ease-out-expo">boim.thinks()</span>
+    </a>
+
+    <nav class="sh__links hidden s:flex items-center gap-8">
+      <a href="/" class="text-sm font-medium text-content-secondary hover:text-green-electric transition-colors duration-300">Home</a>
+      <a href="/blog" class="text-sm font-medium text-content-secondary hover:text-green-electric transition-colors duration-300">Blog</a>
+      <a href="/about" class="text-sm font-medium text-content-secondary hover:text-green-electric transition-colors duration-300">About</a>
     </nav>
+
+    <button class="mm-toggle s:hidden flex flex-col gap-1.5 p-2 cursor-pointer bg-transparent border-none text-content" aria-label="Toggle menu">
+      <span class="block w-6 h-[3px] bg-current rounded-full transition-all duration-[0.75s] ease-out-expo origin-center"></span>
+      <span class="block w-6 h-[3px] bg-current rounded-full transition-all duration-[0.75s] ease-out-expo origin-center"></span>
+      <span class="block w-6 h-[3px] bg-current rounded-full transition-all duration-[0.75s] ease-out-expo origin-center"></span>
+    </button>
   </div>
+</header>
+
+<div class="mm-overlay fixed inset-0 z-40 bg-surface/95 backdrop-blur-lg flex items-center justify-center opacity-0 pointer-events-none transition-all duration-[0.75s] ease-out-expo s:hidden">
+  <nav class="flex flex-col items-center gap-8 text-center">
+    <a href="/" class="text-2xl font-bold text-content hover:text-green-electric transition-colors no-underline">Home</a>
+    <a href="/blog" class="text-2xl font-bold text-content hover:text-green-electric transition-colors no-underline">Blog</a>
+    <a href="/about" class="text-2xl font-bold text-content hover:text-green-electric transition-colors no-underline">About</a>
+  </nav>
 </div>
+
+<script>
+  const header = document.querySelector<HTMLElement>('.sh');
+  const logoText = document.querySelector<HTMLElement>('.sh-logo__text');
+  const mmToggle = document.querySelector<HTMLButtonElement>('.mm-toggle');
+  const mmOverlay = document.querySelector<HTMLElement>('.mm-overlay');
+  let lastScrollY = 0;
+  let ticking = false;
+
+  function updateHeader() {
+    const scrollY = window.scrollY;
+
+    if (scrollY > 120) {
+      header?.classList.add('is-active');
+    } else {
+      header?.classList.remove('is-active');
+    }
+
+    if (scrollY > lastScrollY && scrollY > 300) {
+      header?.classList.add('is-hidden');
+    } else {
+      header?.classList.remove('is-hidden');
+    }
+
+    lastScrollY = scrollY;
+    ticking = false;
+  }
+
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(updateHeader);
+      ticking = true;
+    }
+  }, { passive: true });
+
+  mmToggle?.addEventListener('click', () => {
+    mmToggle.classList.toggle('is-active');
+    mmOverlay?.classList.toggle('is-active');
+    document.body.classList.toggle('overflow-hidden');
+  });
+
+  mmOverlay?.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      mmToggle?.classList.remove('is-active');
+      mmOverlay?.classList.remove('is-active');
+      document.body.classList.remove('overflow-hidden');
+    });
+  });
+</script>
+
+<style>
+  .sh.is-active {
+    background-color: #334238;
+  }
+  .sh.is-hidden {
+    transform: translateY(-100%);
+  }
+  .sh.is-active .sh-logo__text {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    margin-left: 0;
+  }
+  .sh.is-active .sh-logo__icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .mm-toggle.is-active span:nth-child(1) {
+    transform: rotate(45deg) translate(4px, 4px);
+  }
+  .mm-toggle.is-active span:nth-child(2) {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  .mm-toggle.is-active span:nth-child(3) {
+    transform: rotate(-45deg) translate(4px, -4px);
+  }
+
+  .mm-overlay.is-active {
+    opacity: 1;
+    pointer-events: all;
+  }
+</style>

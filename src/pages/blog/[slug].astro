@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import BlogCard from '../../components/BlogCard.astro';
 import { getBlogPosts } from '../../lib/api';
 import { marked } from 'marked';
 import matter from 'gray-matter';
@@ -9,10 +10,7 @@ export async function getStaticPaths() {
   return posts.map((post: any) => {
     try {
       const { data } = matter(post.content);
-      return {
-        params: { slug: data.slug },
-        props: { post },
-      };
+      return { params: { slug: data.slug }, props: { post } };
     } catch (e) {
       console.error("Error generating path:", e);
       return null;
@@ -25,7 +23,6 @@ let data: any = {};
 let htmlContent = "";
 let parsed: any = null;
 
-// Parse DD/MM/YYYY format correctly
 const parseIndonesianDate = (dateStr: string) => {
   if (!dateStr) return null;
   try {
@@ -34,7 +31,7 @@ const parseIndonesianDate = (dateStr: string) => {
     return new Date(`${year}-${month}-${day}T${timePart}`);
   } catch (e) {
     console.error("Error parsing date:", e);
-    return new Date(dateStr); // fallback to default parsing
+    return new Date(dateStr);
   }
 };
 
@@ -49,12 +46,28 @@ try {
   renderer.image = ({ href, title, text }) => {
     const alt = text || title || '';
     const titleAttr = title ? ` title="${title}"` : '';
-    return `<img src="${href}" alt="${alt}"${titleAttr} class="w-full h-auto rounded-lg my-4" />`;
+    return `<img src="${href}" alt="${alt}"${titleAttr} />`;
+  };
+  renderer.heading = ({ text, depth }) => {
+    const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+    return `<h${depth} id="${id}">${text}</h${depth}>`;
   };
   marked.use({ renderer });
   htmlContent = await marked.parse(parsed.content);
 } catch (e) {
   console.error("Error parsing content:", e);
+}
+
+const tocItems: { level: number; text: string; id: string }[] = [];
+if (parsed?.content) {
+  const headingRegex = /^(#{2,3})\s+(.+)$/gm;
+  let match;
+  while ((match = headingRegex.exec(parsed.content)) !== null) {
+    const level = match[1].length;
+    const text = match[2].trim();
+    const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+    tocItems.push({ level, text, id });
+  }
 }
 
 const imageUrl = data.feature_image;
@@ -65,9 +78,7 @@ try {
   const d = parseIndonesianDate(data.published_at);
   if (d && !isNaN(d.getTime())) {
     formattedDate = new Intl.DateTimeFormat('id-ID', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
+      day: 'numeric', month: 'long', year: 'numeric'
     }).format(d);
   }
 } catch (e) {
@@ -75,7 +86,6 @@ try {
   formattedDate = data.published_at || "Tanggal tidak tersedia";
 }
 
-// Create Schema.org structured data
 const formatDateForSchema = (dateStr: string) => {
   try {
     const parsedDate = parseIndonesianDate(dateStr);
@@ -93,69 +103,121 @@ const schemaData = {
   "description": data.description,
   "datePublished": data.published_at ? formatDateForSchema(data.published_at) : new Date().toISOString(),
   "dateModified": data.updated_at ? formatDateForSchema(data.updated_at) : (data.published_at ? formatDateForSchema(data.published_at) : new Date().toISOString()),
-  "author": {
-    "@type": "Person",
-    "name": "Boim Thinker"
-  },
+  "author": { "@type": "Person", "name": "Boim Thinker" },
   "publisher": {
-    "@type": "Organization",
-    "name": "boim.thinks()",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://boim.web.id/favicon.png"
-    }
+    "@type": "Organization", "name": "boim.thinks()",
+    "logo": { "@type": "ImageObject", "url": "https://boim.web.id/favicon.png" }
   },
   "image": ogImage,
   "articleBody": parsed?.content ? parsed.content.substring(0, 200) + "..." : data.description || "No content available",
   "keywords": data.tags ? data.tags.split(',').map((tag: string) => tag.trim()) : []
 };
+
+const allPosts = await getBlogPosts();
+const relatedPosts = allPosts
+  .map((p: any) => {
+    try {
+      const { data: d } = matter(p.content);
+      return {
+        title: d.title_short,
+        description: d.description,
+        date: d.published_at,
+        slug: d.slug,
+        feature_image: d.feature_image,
+      };
+    } catch { return null; }
+  })
+  .filter(Boolean)
+  .filter((p: any) => p.slug !== data.slug)
+  .sort((a: any, b: any) => {
+    const pd = (s: string) => { const [dp, tp] = s.split(' '); const [d, m, y] = dp.split('/'); return new Date(`${y}-${m}-${d}T${tp}`); };
+    return pd(b.date).getTime() - pd(a.date).getTime();
+  })
+  .slice(0, 3);
 ---
 
 <Layout title={`${data.title_seo || 'Post'} // boim.thinks()`} schemaData={schemaData}
-	og={{
-		title: data.title_seo || data.title_short || 'boim.thinks()',
-		description: data.description || '',
-		image: ogImage,
-		url: `https://boim.web.id/blog/${data.slug}`,
-	}}
+  og={{
+    title: data.title_seo || data.title_short || 'boim.thinks()',
+    description: data.description || '',
+    image: ogImage,
+    url: `https://boim.web.id/blog/${data.slug}`,
+  }}
 >
-  <main class="max-w-4xl mx-auto p-6 py-12">
-    
-    
-    <article>
-      <!-- Date and Tags -->
-      <div class="flex flex-wrap items-center gap-4 mb-4">
-        <time class="text-xs text-gray-400 font-semibold">
-          {formattedDate}
-        </time>
+  <!-- Section 1: Header -->
+  <section class="px-6 s:px-16 d:px-100 pt-12 s:pt-10 pb-12">
+    <div class="max-w-[90rem] mx-auto">
+      <div class="flex flex-wrap items-center gap-4 mb-6 reveal">
+        <time class="text-xs text-content-muted font-medium">{formattedDate}</time>
         {data.tags && (
           <div class="flex flex-wrap gap-2">
             {data.tags.split(',').map((tag: string) => (
-              <span class="px-3 py-1 text-xs font-semibold rounded-full bg-blue-900/30 text-blue-300 border border-blue-800/50">
+              <span class="px-3 py-1 text-xs lowercase font-medium rounded-full border border-white/10 text-content-secondary">
                 {tag.trim()}
               </span>
             ))}
           </div>
         )}
+        
       </div>
 
-      <!-- Judul SEO -->
-      <h1 class="text-2xl font-bold uppercase mb-6 mt-8">{data.title_seo}</h1>
+      <h1 class="text-2xl s:text-4xl font-black leading-[1.1] mb-8 reveal" style="transition-delay: 0.1s">{data.title_seo}</h1>
 
-      <!-- Gambar -->
       {imageUrl && (
-        <img src={imageUrl} alt={data.title_short} class="w-full h-auto rounded-xl mb-8 border border-gray-800" />
+        <div class="rounded-xl overflow-hidden reveal" style="transition-delay: 0.2s">
+          <img src={imageUrl} alt={data.title_short} class="w-full h-auto" />
+        </div>
       )}
+    </div>
+  </section>
 
-      <!-- Judul Short -->
-      <h2 class="text-xl font-bold mb-4 text-white">{data.title_short}</h2>
+  <!-- Section 2: Content + Sidebar TOC -->
+  <section class="px-6 s:px-16 d:px-100 pb-20">
+    <div class="max-w-[90rem] mx-auto flex flex-col s:flex-row gap-12">
+      <div class="flex-1 min-w-0 max-w-[75rem]">
+        {data.title_short && (
+          <h2 class="text-xl s:text-2xl font-bold mb-6 leading-tight">{data.title_short}</h2>
+        )}
+        {data.intro && (
+          <p class="text-base s:text-lg text-content-secondary mb-10 leading-relaxed reveal">{data.intro}</p>
+        )}
+        <div class="article-body" set:html={htmlContent} />
+      </div>
 
-      <!-- Intro -->
-      <p class="text-sm text-gray-400 mb-8">{data.intro}</p>
+      {tocItems.length > 0 && (
+        <aside class="hidden d:block w-64 shrink-0">
+          <div class="sticky top-28">
+            <p class="text-xs font-medium text-content-muted uppercase tracking-wider mb-4">On this page</p>
+            <nav class="flex flex-col gap-2.5 border-l border-white/10 pl-4">
+              {tocItems.map((item) => (
+                <a
+                  href={`#${item.id}`}
+                  class={`text-sm transition-colors duration-200 no-underline ${
+                    item.level === 3
+                      ? 'pl-4 text-content-muted hover:text-content-secondary'
+                      : 'text-content-secondary hover:text-content'
+                  }`}
+                >
+                  {item.text}
+                </a>
+              ))}
+            </nav>
+          </div>
+        </aside>
+      )}
+    </div>
+  </section>
 
-      <!-- Content with prose styling -->
-      <div class="prose-custom" set:html={htmlContent} />
-
-    </article>
-  </main>
+  {relatedPosts.length > 0 && (
+    <section class="px-6 s:px-16 d:px-100 pt-20 s:pt-32 pb-20 s:pb-32 -mt-10 s:-mt-20">
+      <div class="max-w-[90rem] mx-auto">
+        <h2 class="text-xl s:text-2xl font-bold mb-8 reveal">Related Posts</h2>
+        <div class="grid grid-cols-1 s:grid-cols-2 d:grid-cols-3 gap-x-15 gap-y-15">
+          {relatedPosts.map((p: any) => (
+            <BlogCard {...p} />
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
 </Layout>

@@ -20,16 +20,13 @@ const processedPosts = posts.map((post: any) => {
     console.error("Error parsing frontmatter:", e);
     return null;
   }
-}).filter(Boolean).sort((a: any, b: any) => {
-  return ((dateStr: string) => {
-const [datePart, timePart] = dateStr.split(' ');
-const [day, month, year] = datePart.split('/');
-return new Date(`${year}-${month}-${day}T${timePart}`);
-})(b.date).getTime() - ((dateStr: string) => {
-const [datePart, timePart] = dateStr.split(' ');
-const [day, month, year] = datePart.split('/');
-return new Date(`${year}-${month}-${day}T${timePart}`);
-})(a.date).getTime();
+}).filter((p): p is any => p !== null).sort((a: any, b: any) => {
+  const parseDate = (dateStr: string) => {
+    const [datePart, timePart] = dateStr.split(' ');
+    const [day, month, year] = datePart.split('/');
+    return new Date(`${year}-${month}-${day}T${timePart}`);
+  };
+  return parseDate(b.date).getTime() - parseDate(a.date).getTime();
 });
 
 const tagCounts: Record<string, number> = {};
@@ -43,64 +40,70 @@ const topTags = sortedTags.slice(0, 5).map(([tag]) => tag);
 ---
 
 <Layout title="boim.thinks() | Archive">
-	<main class="max-w-4xl mx-auto p-6">
-		<h1 class="text-2xl font-bold mb-8">All Posts</h1>
+  <section class="px-6 s:px-16 d:px-100 pt-12 s:pt-10 pb-12 s:pb-16">
+    <div class="max-w-[90rem] mx-auto">
+      <p class="text-content-muted text-sm font-medium mb-4 reveal">Archive</p>
+      <h1 class="text-3xl s:text-4xl d:text-5xl font-black leading-[1.1] reveal" style="transition-delay: 0.1s">All Posts</h1>
+    </div>
+  </section>
 
-		<div id="tag-filters" class="flex gap-2 mb-10 overflow-x-auto no-scrollbar">
-			<button class="tag-btn active shrink-0 px-2 py-1 text-xs uppercase rounded-full border transition-colors cursor-pointer bg-blue-600 text-white border-blue-600 hover:bg-blue-700" data-tag="all">
-			All
-			</button>
-			{topTags.map((tag) => (
-				<button class="tag-btn shrink-0 px-2 py-1 text-xs uppercase rounded-full border transition-colors cursor-pointer bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700 hover:text-white" data-tag={tag}>
-					{tag}
-					<span class="ml-1.5 text-xs opacity-70">({tagCounts[tag]})</span>
-				</button>
-			))}
-		</div>
+  <section class="px-6 s:px-16 d:px-100 pb-12 s:pb-16">
+    <div class="max-w-[90rem] mx-auto">
+      <div id="tag-filters" class="flex gap-2 mb-10 overflow-x-auto no-scrollbar">
+        <button class="tag-btn active shrink-0 px-4 py-1.5 text-xs font-medium rounded-full border transition-all duration-300 cursor-pointer bg-green-electric text-surface border-green-electric hover:bg-green-electric/90" data-tag="all">
+          All
+        </button>
+        {topTags.map((tag) => (
+          <button class="tag-btn shrink-0 px-4 py-1.5 text-xs font-medium rounded-full border transition-all duration-300 cursor-pointer bg-transparent text-content-secondary border-white/10 hover:border-green-electric hover:text-green-electric" data-tag={tag}>
+            {tag}
+            <span class="ml-1 text-xs opacity-60">({tagCounts[tag]})</span>
+          </button>
+        ))}
+      </div>
 
-		<div id="post-list" class="grid gap-10">
-			{processedPosts.map((post: any) => (
-				<article class="post-item" data-tags={post.tags.join(',')}>
-					<BlogCard {...post} />
-				</article>
-			))}
-		</div>
-	</main>
+      <div id="post-list" class="grid grid-cols-1 s:grid-cols-2 pb-24 gap-x-15 gap-y-15">
+        {processedPosts.map((post: any) => (
+          <article class="post-item" data-tags={post.tags.join(',')}>
+            <BlogCard {...post} />
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
 </Layout>
 
 <script>
-	const filterBtns = document.querySelectorAll<HTMLButtonElement>('.tag-btn');
-	const posts = document.querySelectorAll<HTMLElement>('.post-item');
+  const filterBtns = document.querySelectorAll<HTMLButtonElement>('.tag-btn');
+  const posts = document.querySelectorAll<HTMLElement>('.post-item');
 
-	filterBtns.forEach((btn) => {
-		btn.addEventListener('click', () => {
-			const tag = btn.dataset.tag ?? 'all';
+  filterBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const tag = btn.dataset.tag ?? 'all';
+      filterBtns.forEach((b) => {
+        b.classList.remove('bg-green-electric', 'text-surface', 'border-green-electric');
+        b.classList.add('bg-transparent', 'text-content-secondary', 'border-white/10');
+      });
+      btn.classList.remove('bg-transparent', 'text-content-secondary', 'border-white/10');
+      btn.classList.add('bg-green-electric', 'text-surface', 'border-green-electric');
 
-			filterBtns.forEach((b) => {
-				b.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
-				b.classList.add('bg-gray-800', 'text-gray-300', 'border-gray-700');
-			});
-			btn.classList.remove('bg-gray-800', 'text-gray-300', 'border-gray-700');
-			btn.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
-
-			posts.forEach((post) => {
-				if (tag === 'all') {
-					post.style.display = '';
-				} else {
-					const postTags = post.dataset.tags?.split(',') || [];
-					post.style.display = postTags.includes(tag) ? '' : 'none';
-				}
-			});
-		});
-	});
+      posts.forEach((post) => {
+        if (tag === 'all') {
+          post.style.display = '';
+        } else {
+          const postTags = post.dataset.tags?.split(',') || [];
+          post.style.display = postTags.includes(tag) ? '' : 'none';
+        }
+      });
+    });
+  });
 </script>
 
 <style>
-	.no-scrollbar {
-		-ms-overflow-style: none;
-		scrollbar-width: none;
-	}
-	.no-scrollbar::-webkit-scrollbar {
-		display: none;
-	}
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 </style>

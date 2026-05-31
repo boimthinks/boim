@@ -19,25 +19,34 @@ const processedPosts = posts.map((post: any) => {
     console.error("Error parsing frontmatter:", e);
     return null;
   }
-}).filter(Boolean).sort((a, b) => {
-  // Parse DD/MM/YYYY format correctly
-  const parseDate = (dateStr) => {
+}).filter(Boolean).sort((a: any, b: any) => {
+  const parseDate = (dateStr: string) => {
     const [datePart, timePart] = dateStr.split(' ');
     const [day, month, year] = datePart.split('/');
     return new Date(`${year}-${month}-${day}T${timePart}`);
   };
-  
   return parseDate(b.date).getTime() - parseDate(a.date).getTime();
 });
 ---
 
 <Layout title="boim.thinks() | Home">
-	<main class="max-w-4xl mx-auto p-6">
-		<h1 class="text-2xl font-bold mb-8">Recent Posts</h1>
-		<div class="grid gap-12">
-			{processedPosts.map((post: any) => (
-				<BlogCard {...post} />
-			))}
-		</div>
-	</main>
+  <section class="px-6 s:px-16 d:px-100 pt-12 s:pt-10 pb-12 s:pb-20">
+    <div class="max-w-[90rem] mx-auto">
+      <p class="text-content-muted text-sm font-medium mb-4 reveal">Blog</p>
+      <h1 class="text-3xl s:text-4xl d:text-5xl font-black leading-[1.1] reveal" style="transition-delay: 0.1s">Recent Posts</h1>
+      <p class="text-content-secondary mt-4 max-w-[40rem] text-sm s:text-base reveal" style="transition-delay: 0.2s">
+        Thoughts on coding, tech, and life — written with candor and carpe diem energy.
+      </p>
+    </div>
+  </section>
+
+  <section class="px-6 s:px-16 d:px-100 pb-20 s:pb-32">
+    <div class="max-w-[90rem] mx-auto">
+      <div class="grid grid-cols-1 s:grid-cols-2 gap-x-15 gap-y-15">
+        {processedPosts.map((post: any) => (
+          <BlogCard {...post} />
+        ))}
+      </div>
+    </div>
+  </section>
 </Layout>
