@@ -1,0 +1,93 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import PromptCard from '../../components/PromptCard.astro';
+import { getPromptPosts, getPromptCategories } from '../../lib/prompts';
+
+const prompts = getPromptPosts();
+const allCount = prompts.length;
+const categories = getPromptCategories();
+---
+
+<Layout title="boim.thinks() | Prompt Collection">
+  <section class="px-6 s:px-16 d:px-100 pt-12 s:pt-10 pb-12 s:pb-16">
+    <div class="max-w-[90rem] mx-auto">
+      <p class="text-content-muted text-sm font-medium mb-4 reveal">Library</p>
+      <h1 class="text-3xl s:text-4xl d:text-5xl font-black leading-[1.1] reveal" style="transition-delay: 0.1s">Prompt Collection</h1>
+      <p class="text-content-secondary mt-4 max-w-[40rem] text-lg reveal" style="transition-delay: 0.2s">
+        Kumpulan template prompt siap pakai. Isi field, lihat prompt berubah realtime, lalu copy.
+      </p>
+    </div>
+  </section>
+
+  <section class="px-6 s:px-16 d:px-100 pb-12 s:pb-16">
+    <div class="max-w-[90rem] mx-auto">
+      <div id="prompt-filters" class="flex gap-2 mb-10 overflow-x-auto no-scrollbar">
+        <button class="prompt-tag-btn active shrink-0 px-4 py-1.5 text-xs font-medium rounded-full border transition-all duration-300 cursor-pointer bg-green-electric text-surface border-green-electric hover:bg-green-electric/90" data-category="all">
+          All
+          <span class="ml-1 text-xs opacity-60">({allCount})</span>
+        </button>
+        {categories.map((cat) => (
+          <button class="prompt-tag-btn shrink-0 px-4 py-1.5 text-xs font-medium rounded-full border transition-all duration-300 cursor-pointer bg-transparent text-content-secondary border-white/10 hover:border-green-electric hover:text-green-electric" data-category={cat.name}>
+            {cat.name}
+            <span class="ml-1 text-xs opacity-60">({cat.count})</span>
+          </button>
+        ))}
+      </div>
+
+      <div id="prompt-list" class="grid grid-cols-1 s:grid-cols-2 d:grid-cols-3 gap-x-8 gap-y-12">
+        {prompts.map((p) => (
+          <div class="prompt-item" data-category={p.frontmatter.category}>
+            <PromptCard
+              slug={p.frontmatter.slug}
+              title={p.frontmatter.title}
+              description={p.frontmatter.description}
+              category={p.frontmatter.category}
+              preview_image={p.frontmatter.preview_image}
+            />
+          </div>
+        ))}
+      </div>
+
+      {prompts.length === 0 && (
+        <div class="text-center py-20 text-content-muted">
+          <p>Belum ada prompt. Tambahkan file .md di <code class="font-mono text-green-electric">src/content/prompts/</code></p>
+        </div>
+      )}
+    </div>
+  </section>
+</Layout>
+
+<script>
+  const filterBtns = document.querySelectorAll<HTMLButtonElement>('.prompt-tag-btn');
+  const items = document.querySelectorAll<HTMLElement>('.prompt-item');
+
+  filterBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const cat = btn.dataset.category ?? 'all';
+      filterBtns.forEach((b) => {
+        b.classList.remove('bg-green-electric', 'text-surface', 'border-green-electric');
+        b.classList.add('bg-transparent', 'text-content-secondary', 'border-white/10');
+      });
+      btn.classList.remove('bg-transparent', 'text-content-secondary', 'border-white/10');
+      btn.classList.add('bg-green-electric', 'text-surface', 'border-green-electric');
+
+      items.forEach((item) => {
+        if (cat === 'all') {
+          item.style.display = '';
+        } else {
+          item.style.display = item.dataset.category === cat ? '' : 'none';
+        }
+      });
+    });
+  });
+</script>
+
+<style>
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+</style>

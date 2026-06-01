@@ -1,0 +1,131 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import PromptForm from '../../components/PromptForm.astro';
+import PromptCard from '../../components/PromptCard.astro';
+import { getPromptPosts, getPromptBySlug, getRelatedPrompts } from '../../lib/prompts';
+import { marked } from 'marked';
+
+export async function getStaticPaths() {
+  const prompts = getPromptPosts();
+  return prompts.map((p) => ({
+    params: { slug: p.frontmatter.slug },
+    props: { prompt: p },
+  }));
+}
+
+const { prompt } = Astro.props as { prompt: Awaited<ReturnType<typeof getPromptBySlug>> };
+if (!prompt) {
+  return Astro.redirect('/prompt');
+}
+
+const fm = prompt.frontmatter;
+const related = getRelatedPrompts(fm.slug, fm.category, 3);
+
+const prettyCategory = fm.category
+  .split('-')
+  .map((w) => w[0].toUpperCase() + w.slice(1))
+  .join(' ');
+
+let htmlContent = '';
+try {
+  htmlContent = await marked.parse(prompt.content || '');
+} catch (e) {
+  console.error('Error parsing prompt body:', e);
+}
+
+const ogImage = fm.preview_image?.startsWith('/')
+  ? `https://boim.web.id${fm.preview_image}`
+  : (fm.preview_image || 'https://boim.web.id/favicon.png');
+
+const schemaData = {
+  '@context': 'https://schema.org',
+  '@type': 'CreativeWork',
+  name: fm.title,
+  description: fm.description,
+  author: { '@type': 'Person', name: 'Boim Thinker' },
+  publisher: {
+    '@type': 'Organization',
+    name: 'boim.thinks()',
+    logo: { '@type': 'ImageObject', url: 'https://boim.web.id/favicon.png' },
+  },
+  image: ogImage,
+  keywords: fm.tags ? fm.tags.split(',').map((t: string) => t.trim()) : [fm.category],
+};
+---
+
+<Layout
+  title={`${fm.title} // boim.thinks()`}
+  schemaData={schemaData}
+  og={{
+    title: fm.title,
+    description: fm.description,
+    image: ogImage,
+    url: `https://boim.web.id/prompt/${fm.slug}`,
+  }}
+>
+  <!-- Section 1: Header -->
+  <section class="px-6 s:px-16 d:px-100 pt-12 s:pt-10 pb-8">
+    <div class="max-w-[90rem] mx-auto">
+      <div class="flex flex-wrap items-center gap-3 mb-6 reveal">
+            <span class="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full bg-surface-secondary text-green-electric border border-green-electric/30">
+          {prettyCategory}
+        </span>
+      </div>
+      <h1 class="text-3xl s:text-4xl d:text-5xl font-black leading-[1.1] mb-4 reveal" style="transition-delay: 0.1s">{fm.title}</h1>
+      <p class="text-lg text-content-secondary max-w-[40rem] reveal" style="transition-delay: 0.2s">{fm.description}</p>
+    </div>
+  </section>
+
+  <!-- Section 2: Preview Image -->
+  {fm.preview_image && (
+    <section class="px-6 s:px-16 d:px-100 pb-12">
+      <div class="max-w-[90rem] mx-auto">
+        <div class="rounded-xl overflow-hidden bg-surface-secondary reveal">
+          <img src={fm.preview_image} alt={fm.title} title={fm.title} class="w-full h-auto" loading="lazy" />
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Section 4: Form Interaktif -->
+  <section class="px-6 s:px-16 d:px-100 pb-20 ">
+    <div class="max-w-[70rem]">
+      <div class="mb-6 reveal">
+        <h2 class="text-2xl s:text-3xl font-bold mb-2">Generator Prompt</h2>
+        <p class="text-content-secondary">Isi field di bawah, prompt di atas akan ter-update otomatis.</p>
+      </div>
+      <div class="reveal" style="transition-delay: 0.1s">
+        <PromptForm template={fm.prompt_template} inputs={fm.inputs} />
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: Markdown notes (optional) -->
+  {prompt.content && prompt.content.trim() && (
+    <section class="px-6 s:px-16 d:px-100 pb-12">
+      <div class="max-w-[70rem]">
+        <div class="prompt-body article-body" set:html={htmlContent} />
+      </div>
+    </section>
+  )}
+
+  <!-- Section 5: Related Prompts -->
+  {related.length > 0 && (
+    <section class="px-6 s:px-16 d:px-100 pt-12 s:pt-20 pb-20 s:pb-32">
+      <div class="max-w-[90rem] mx-auto">
+        <h2 class="text-xl s:text-2xl font-bold mb-8 reveal">Prompt Serupa</h2>
+        <div class="grid grid-cols-1 s:grid-cols-2 d:grid-cols-3 gap-x-8 gap-y-12">
+          {related.map((p) => (
+            <PromptCard
+              slug={p.frontmatter.slug}
+              title={p.frontmatter.title}
+              description={p.frontmatter.description}
+              category={p.frontmatter.category}
+              preview_image={p.frontmatter.preview_image}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+</Layout>

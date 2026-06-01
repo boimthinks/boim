@@ -1,0 +1,166 @@
+---
+import type { PromptInput } from '../lib/prompts';
+
+interface Props {
+  template: string;
+  inputs: PromptInput[];
+}
+
+const { template, inputs } = Astro.props;
+---
+
+<div class="prompt-form-wrapper" data-template={template}>
+  <!-- Prompt Output Box -->
+  <div class="mb-6">
+    <div class="flex items-center justify-between mb-3">
+      <label class="text-xs font-semibold uppercase tracking-wider text-content-muted">Hasil Prompt</label>
+      <div class="flex gap-2">
+        <button
+          type="button"
+          class="reset-btn inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-white/10 text-content-secondary hover:border-white/20 hover:text-content transition-colors duration-200 cursor-pointer"
+          aria-label="Reset semua input"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+          Reset
+        </button>
+        <button
+          type="button"
+          class="copy-btn inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md bg-green-electric text-surface hover:bg-green-electric/90 transition-colors duration-200 cursor-pointer"
+          aria-label="Copy prompt"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="copy-icon">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="check-icon hidden">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+    </div>
+    <div
+      id="prompt-output"
+      class="min-h-[120px] p-5 rounded-lg bg-surface-secondary border border-white/10 font-mono text-[15px] leading-relaxed text-content whitespace-pre-wrap break-words"
+    ></div>
+  </div>
+
+  <!-- Input Fields -->
+  <div>
+    <label class="block text-xs font-semibold uppercase tracking-wider text-content-muted mb-4">Isi Field di Bawah Ini</label>
+    <div class="grid grid-cols-1 s:grid-cols-2 gap-4">
+      {inputs.map((input) => (
+        <div class="flex flex-col gap-2">
+          <label for={`field-${input.key}`} class="text-sm font-semibold text-content-secondary">
+            {input.label}
+          </label>
+          <input
+            type="text"
+            id={`field-${input.key}`}
+            data-key={input.key}
+            placeholder={input.placeholder || `Masukkan ${input.label.toLowerCase()}...`}
+            autocomplete="off"
+            class="w-full px-4 py-2.5 rounded-md bg-surface-tertiary border border-white/10 text-content placeholder:text-content-muted/50 text-sm font-mono focus:outline-none focus:border-green-electric focus:ring-1 focus:ring-green-electric/30 transition-colors duration-200"
+          />
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+
+<script>
+  function initPromptForm(wrapper: HTMLElement) {
+    const template = wrapper.dataset.template || '';
+    const output = wrapper.querySelector<HTMLElement>('#prompt-output');
+    const fields = wrapper.querySelectorAll<HTMLInputElement>('input[data-key]');
+    const copyBtn = wrapper.querySelector<HTMLButtonElement>('.copy-btn');
+    const resetBtn = wrapper.querySelector<HTMLButtonElement>('.reset-btn');
+    const copyLabel = wrapper.querySelector<HTMLElement>('.copy-label');
+    const copyIcon = wrapper.querySelector<HTMLElement>('.copy-icon');
+    const checkIcon = wrapper.querySelector<HTMLElement>('.check-icon');
+
+    if (!output) return;
+
+    const escapeHtml = (s: string) =>
+      s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string);
+
+    function render() {
+      let result = template;
+      fields.forEach((input) => {
+        const key = input.dataset.key || '';
+        const val = input.value.trim();
+        if (val) {
+          result = result.split(`[${key}]`).join(val);
+        }
+      });
+
+      // Highlight remaining [KEY] placeholders
+      const html = escapeHtml(result).replace(
+        /\[([^\]]+)\]/g,
+        '<span class="text-content-muted">[$1]</span>'
+      );
+      output.innerHTML = html;
+    }
+
+    function getPlainText(): string {
+      return output?.innerText || output?.textContent || '';
+    }
+
+    function showCopiedFeedback() {
+      if (!copyBtn || !copyLabel || !copyIcon || !checkIcon) return;
+      copyIcon.classList.add('hidden');
+      checkIcon.classList.remove('hidden');
+      copyLabel.textContent = 'Tersalin!';
+      copyBtn.classList.add('bg-green-fern', 'text-surface');
+      copyBtn.classList.remove('bg-green-electric');
+      setTimeout(() => {
+        copyIcon.classList.remove('hidden');
+        checkIcon.classList.add('hidden');
+        copyLabel.textContent = 'Copy';
+        copyBtn.classList.remove('bg-green-fern', 'text-surface');
+        copyBtn.classList.add('bg-green-electric');
+      }, 1500);
+    }
+
+    fields.forEach((input) => {
+      input.addEventListener('input', render);
+    });
+
+    copyBtn?.addEventListener('click', async () => {
+      const text = getPlainText();
+      try {
+        await navigator.clipboard.writeText(text);
+        showCopiedFeedback();
+      } catch (e) {
+        // Fallback for older browsers / non-https
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          showCopiedFeedback();
+        } catch (err) {
+          console.error('Copy failed:', err);
+        }
+        document.body.removeChild(ta);
+      }
+    });
+
+    resetBtn?.addEventListener('click', () => {
+      fields.forEach((input) => {
+        input.value = '';
+      });
+      render();
+    });
+
+    render();
+  }
+
+  document.querySelectorAll<HTMLElement>('.prompt-form-wrapper').forEach(initPromptForm);
+</script>

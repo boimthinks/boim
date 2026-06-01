@@ -1,0 +1,56 @@
+---
+interface Props {
+  slug: string;
+  title: string;
+  description: string;
+  category: string;
+  preview_image?: string;
+}
+
+const { slug, title, description, category, preview_image } = Astro.props;
+
+const prettyCategory = category
+  .split('-')
+  .map((w) => w[0].toUpperCase() + w.slice(1))
+  .join(' ');
+---
+
+<article class="group prompt-card reveal" data-category={category}>
+  <a href={`/prompt/${slug}`} class="block no-underline">
+    <div class="relative overflow-hidden rounded-xl mb-4 bg-surface-secondary">
+      <div class="pt-[57.5%]">
+        {preview_image ? (
+          <img
+            src={preview_image}
+            alt={title}
+            class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out-expo group-hover:scale-105"
+            loading="lazy"
+          />
+        ) : (
+          <div class="absolute inset-0 bg-gradient-to-br from-teal/30 to-green-fern/30">
+            <svg class="w-full h-full opacity-20 text-content-muted" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+              <defs>
+                <pattern id={`grid-${slug}`} width="40" height="40" patternUnits="userSpaceOnUse">
+                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" stroke-width="0.5"/>
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill={`url(#grid-${slug})`} />
+            </svg>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <span class="text-content-muted text-xs font-medium uppercase tracking-wider">No preview</span>
+            </div>
+          </div>
+        )}
+      </div>
+      <div class="absolute top-3 left-3">
+        <span class="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full bg-surface/80 backdrop-blur-sm text-green-electric border border-green-electric/30">
+          {prettyCategory}
+        </span>
+      </div>
+    </div>
+    <h3 class="font-bold text-2xl mt-1 mb-2 line-clamp-2 leading-tight transition-colors duration-300 group-hover:text-green-electric">
+      {title}
+    </h3>
+    <p class="text-base text-content-secondary line-clamp-2">{description}</p>
+  </a>
+</article>
