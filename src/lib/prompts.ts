@@ -48,8 +48,9 @@ export function getPromptPosts(): Prompt[] {
   return readAllPrompts().sort((a, b) => {
     const pd = (s: string) => {
       const [dp, tp] = (s || '').split(' ');
+      if (!dp) return new Date(0); // Tanggal tidak valid
       const [d, m, y] = dp.split('/');
-      return new Date(`${y}-${m}-${d}T${tp}`);
+      return new Date(`${y || '1970'}-${m || '01'}-${d || '01'}T${tp || '00:00:00'}`);
     };
     return pd(b.frontmatter.published_at).getTime() - pd(a.frontmatter.published_at).getTime();
   });

@@ -15,7 +15,7 @@ export async function getStaticPaths() {
       console.error("Error generating path:", e);
       return null;
     }
-  }).filter(Boolean);
+  }).filter((p): p is { params: { slug: string }, props: { post: any } } => p !== null && !!p.params.slug);
 }
 
 const { post } = Astro.props as { post: any };
@@ -27,8 +27,9 @@ const parseIndonesianDate = (dateStr: string) => {
   if (!dateStr) return null;
   try {
     const [datePart, timePart] = dateStr.split(' ');
+    if (!datePart) return new Date(0);
     const [day, month, year] = datePart.split('/');
-    return new Date(`${year}-${month}-${day}T${timePart}`);
+    return new Date(`${year || '1970'}-${month || '01'}-${day || '01'}T${timePart || '00:00:00'}`);
   } catch (e) {
     console.error("Error parsing date:", e);
     return new Date(dateStr);
@@ -130,7 +131,13 @@ const relatedPosts = allPosts
   .filter(Boolean)
   .filter((p: any) => p.slug !== data.slug)
   .sort((a: any, b: any) => {
-    const pd = (s: string) => { const [dp, tp] = s.split(' '); const [d, m, y] = dp.split('/'); return new Date(`${y}-${m}-${d}T${tp}`); };
+    const pd = (s: string) => { 
+      if (!s) return new Date(0);
+      const [dp, tp] = s.split(' ');
+      if (!dp) return new Date(0);
+      const [d, m, y] = dp.split('/'); 
+      return new Date(`${y || '1970'}-${m || '01'}-${d || '01'}T${tp || '00:00:00'}`); 
+    };
     return pd(b.date).getTime() - pd(a.date).getTime();
   })
   .slice(0, 3);

@@ -152,7 +152,7 @@ status: draft
 - `title_short`: Judul singkat yang muncul di halaman blog (maks 60 karakter)
 - `title_seo`: Judul SEO yang lebih panjang dan mengandung keyword — ini yang jadi H1 di halaman artikel
 - `description`: Meta description 120-155 karakter, mengandung keyword + ajakan
-- `intro`: 1 paragraf hook — kalimat pembuka yang reflektif/menggoda, muncul di card blog
+- `intro`: 1 paragraf hook — kalimat pembuka yang reflektif/menggoda, muncul di card blog. WAJIB dibungkus tanda kutip jika mengandung karakter spesial seperti titik dua atau tanda kutip di dalamnya.
 - `tags`: String comma-separated, lowercase. Contoh: `ai, coding, astro, pengalaman`
 - `published_at`: Format `DD/MM/YYYY HH:mm:ss`. Contoh: `22/05/2026 16:15:56`
 - `status`: `draft` (default) atau `published` jika sudah siap tayang
@@ -222,7 +222,7 @@ Ketika diberi topik, agent WAJIB menjalankan langkah berikut:
 
 ## 7. Checklist Before Output
 
-- [ ] Frontmatter lengkap: feature_image, slug, title_short, title_seo, description, intro, tags, published_at, status
+- [ ] Frontmatter lengkap: feature_image, slug, title_short, title_seo, description, intro, tags, published_at, status. WAJIB pastikan string dengan karakter spesial (terutama titik dua `:`) di frontmatter diapit tanda kutip.
 - [ ] `title_short` maks 60 karakter, menarik
 - [ ] `title_seo` mengandung keyword, lebih panjang, gaya conversational
 - [ ] `description` 120-155 karakter
