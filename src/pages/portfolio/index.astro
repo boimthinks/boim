@@ -1,0 +1,120 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import PortfolioCard from '../../components/PortfolioCard.astro';
+import { getPortfolioItems } from '../../lib/portfolio';
+
+const items = getPortfolioItems();
+
+const categories = ['all', 'website', 'aplikasi', 'source code'];
+---
+
+<Layout title="boim.thinks() | Portfolio">
+  <section class="px-6 s:px-16 d:px-100 pt-12 s:pt-10 pb-12 s:pb-16">
+    <div class="max-w-[90rem] mx-auto">
+      <p class="text-content-muted text-sm font-medium mb-4 reveal">Portfolio</p>
+      <h1 class="text-3xl s:text-4xl d:text-5xl font-black leading-[1.1] reveal" style="transition-delay: 0.1s">Projects & Work</h1>
+    </div>
+  </section>
+
+  <section class="px-6 s:px-16 d:px-100 pb-12 s:pb-16">
+    <div class="max-w-[90rem] mx-auto">
+      <div id="category-filters" class="flex gap-2 mb-10 overflow-x-auto no-scrollbar">
+        {categories.map((cat) => (
+          <button 
+            class={`tag-btn shrink-0 px-4 py-1.5 text-xs font-medium rounded-full border transition-all duration-300 cursor-pointer ${cat === 'all' ? 'active bg-green-electric text-surface border-green-electric' : 'bg-transparent text-content-secondary border-white/10 hover:border-green-electric hover:text-green-electric'}`} 
+            data-category={cat}
+          >
+            {cat.charAt(0).toUpperCase() + cat.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      <div id="portfolio-list" class="grid grid-cols-1 s:grid-cols-2 d:grid-cols-3 pb-24 gap-x-15 gap-y-15">
+        {items.map((item) => (
+          <article class="portfolio-item" data-category={item.frontmatter.category}>
+            <PortfolioCard {...item.frontmatter} />
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal Structure -->
+  <div id="portfolio-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-6 opacity-0 pointer-events-none transition-all duration-300">
+    <div class="absolute inset-0 bg-surface/90 backdrop-blur-xl" id="modal-overlay"></div>
+    <div class="relative bg-surface-secondary w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl transform scale-95 transition-transform duration-300" id="modal-content">
+      <button id="modal-close" class="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-surface text-content hover:text-green-electric transition-colors">✕</button>
+      <div class="pt-[56.25%] relative">
+        <img id="modal-image" src="" alt="" class="absolute inset-0 w-full h-full object-cover" />
+      </div>
+      <div class="p-8">
+        <span id="modal-category" class="inline-block text-xs font-semibold uppercase tracking-wider text-green-electric mb-2"></span>
+        <h2 id="modal-title" class="text-3xl font-bold text-content mb-4"></h2>
+        <p id="modal-description" class="text-lg text-content-secondary mb-8"></p>
+        <a id="modal-link" href="" target="_blank" class="inline-flex items-center gap-2 px-6 py-3 bg-green-electric text-surface font-bold rounded-lg hover:bg-green-electric/90 transition-colors">
+          Visit Project →
+        </a>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  const filterBtns = document.querySelectorAll<HTMLButtonElement>('.tag-btn');
+  const items = document.querySelectorAll<HTMLElement>('.portfolio-item');
+  const modal = document.getElementById('portfolio-modal');
+  const modalOverlay = document.getElementById('modal-overlay');
+  const modalClose = document.getElementById('modal-close');
+  const modalContent = document.getElementById('modal-content');
+
+  // Filtering
+  filterBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const category = btn.dataset.category ?? 'all';
+      filterBtns.forEach((b) => {
+        b.classList.remove('bg-green-electric', 'text-surface', 'border-green-electric');
+        b.classList.add('bg-transparent', 'text-content-secondary', 'border-white/10');
+      });
+      btn.classList.remove('bg-transparent', 'text-content-secondary', 'border-white/10');
+      btn.classList.add('bg-green-electric', 'text-surface', 'border-green-electric');
+
+      items.forEach((item) => {
+        if (category === 'all') {
+          item.style.display = '';
+        } else {
+          item.style.display = item.dataset.category === category ? '' : 'none';
+        }
+      });
+    });
+  });
+
+  // Modal Functionality
+  const triggers = document.querySelectorAll('.portfolio-trigger');
+  
+  function openModal(e: any) {
+    const trigger = e.currentTarget;
+    const { title, description, category, url, image } = trigger.dataset;
+
+    (document.getElementById('modal-title') as HTMLElement).textContent = title!;
+    (document.getElementById('modal-description') as HTMLElement).textContent = description!;
+    (document.getElementById('modal-category') as HTMLElement).textContent = category!;
+    (document.getElementById('modal-image') as HTMLImageElement).src = image!;
+    (document.getElementById('modal-link') as HTMLAnchorElement).href = url!;
+
+    modal?.classList.remove('pointer-events-none', 'opacity-0');
+    modalContent?.classList.remove('scale-95');
+    modalContent?.classList.add('scale-100');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    modal?.classList.add('pointer-events-none', 'opacity-0');
+    modalContent?.classList.remove('scale-100');
+    modalContent?.classList.add('scale-95');
+    document.body.style.overflow = '';
+  }
+
+  triggers.forEach(t => t.addEventListener('click', openModal));
+  modalOverlay?.addEventListener('click', closeModal);
+  modalClose?.addEventListener('click', closeModal);
+</script>
